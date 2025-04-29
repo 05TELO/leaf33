@@ -1,0 +1,47 @@
+x-default: &default
+  restart: unless-stopped
+  env_file: .env
+  networks:
+    default:
+
+services:
+
+  app:
+    <<: *default
+    container_name: $COMPOSE_PROJECT_NAME-app
+    image: ${IMAGE_NAME:-$COMPOSE_PROJECT_NAME}/app:${IMAGE_TAG:-latest}
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    command: >
+      sh -c "
+      python manage.py collectstatic --noinput &&
+      python manage.py migrate &&
+      gunicorn --bind 0.0.0.0:8000 --workers 1 core.wsgi:application --reload"
+
+  db:
+    <<: *default
+    container_name: $COMPOSE_PROJECT_NAME-db
+    image: postgres:17-alpine
+    volumes:
+      - db:/var/lib/postgresql/data
+    expose:
+      - 5432
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -d ${POSTGRES_DB} -U ${POSTGRES_USER}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  db:
+
+networks:
+  default:

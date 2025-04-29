@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <h2>Dynamic Form with Leaflet</h2>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <form id="dynamic-form" method="post">
+                {% csrf_token %}
+                <div id="inputs-container">
+                    <div class="area-group">
+                        <div class="form-group">
+                            <label>Area Name</label>
+                            <input type="text" name="name1" class="form-control area-name" placeholder="Enter area name">
+                        </div>
+                        <button type="button" class="btn btn-primary select-area">Select Area</button>
+                        <div class="coordinates-display mt-2"></div>
+                        <input type="hidden" name="ne_lat" class="ne_lat">
+                        <input type="hidden" name="ne_lng" class="ne_lng">
+                        <input type="hidden" name="sw_lat" class="sw_lat">
+                        <input type="hidden" name="sw_lng" class="sw_lng">
+                    </div>
+                </div>
+                
+                <button type="button" id="add-input" class="btn btn-secondary">Add Another Area</button>
+                <button type="submit" class="btn btn-success">Save All Areas</button>
+            </form>
+        </div>
+        
+        <div class="col-md-6">
+            <div id="map" style="height: 500px;"></div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+
+<script>
+$(document).ready(function() {
+    let inputCount = 1;
+    let currentAreaGroup = null;
+    let rectangle = null;
+    let startPoint = null;
+    
+    const map = L.map('map').setView([53.9023, 27.5619], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+    
+    $(document).on('click', '.select-area', function() {
+        currentAreaGroup = $(this).closest('.area-group');
+        currentAreaGroup.find('.coordinates-display').html('<div class="alert alert-info">Click on map to select first point</div>');
+        
+        if (rectangle) {
+            map.removeLayer(rectangle);
+            rectangle = null;
+        }
+        startPoint = null;
+    });
+    
+    map.on('click', function(e) {
+        if (!currentAreaGroup) return;
+        
+        if (!startPoint) {
+            startPoint = e.latlng;
+            currentAreaGroup.find('.coordinates-display').html('<div class="alert alert-info">Click to select second point</div>');
+        } else {
+            if (rectangle) {
+                map.removeLayer(rectangle);
+            }
+            
+            rectangle = L.rectangle(L.latLngBounds(startPoint, e.latlng), {
+                color: "#ff7800",
+                weight: 1
+            }).addTo(map);
+            
+            const bounds = rectangle.getBounds();
+            
+            currentAreaGroup.find('.ne_lat').val(bounds.getNorthEast().lat.toFixed(6));
+            currentAreaGroup.find('.ne_lng').val(bounds.getNorthEast().lng.toFixed(6));
+            currentAreaGroup.find('.sw_lat').val(bounds.getSouthWest().lat.toFixed(6));
+            currentAreaGroup.find('.sw_lng').val(bounds.getSouthWest().lng.toFixed(6));
+            
+            currentAreaGroup.find('.coordinates-display').html(`
+                <div class="alert alert-success">
+                    <strong>Selected area coordinates:</strong><br>
+                    North-East: ${bounds.getNorthEast().lat.toFixed(6)}, ${bounds.getNorthEast().lng.toFixed(6)}<br>
+                    South-West: ${bounds.getSouthWest().lat.toFixed(6)}, ${bounds.getSouthWest().lng.toFixed(6)}
+                </div>
+            `);
+            
+            startPoint = null;
+            currentAreaGroup = null;
+        }
+    });
+    
+    $('#add-input').click(function() {
+        inputCount++;
+        $('#inputs-container').append(`
+            <div class="area-group mt-3">
+                <div class="form-group">
+                    <label>Area Name</label>
+                    <input type="text" name="name${inputCount}" class="form-control area-name" placeholder="Enter area name">
+                </div>
+                <button type="button" class="btn btn-primary select-area">Select Area</button>
+                <div class="coordinates-display mt-2"></div>
+                <input type="hidden" name="ne_lat" class="ne_lat">
+                <input type="hidden" name="ne_lng" class="ne_lng">
+                <input type="hidden" name="sw_lat" class="sw_lat">
+                <input type="hidden" name="sw_lng" class="sw_lng">
+            </div>
+        `);
+    });
+});
+</script>
+
+<style>
+.area-group {
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    margin-bottom: 15px;
+}
+</style>
+{% endblock %}
