@@ -20,7 +20,7 @@
 ### 1. Склонируйте репозиторий:
 ```bash
 git clone git@github.com:05TELO/leaf33.git
-cd django-leaflet-geoapp
+cd leaf33
 ```
 
 ### 2. Создайте `.env` файл:
