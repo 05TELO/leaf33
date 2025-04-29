@@ -19,7 +19,7 @@
 
 ### 1. Склонируйте репозиторий:
 ```bash
-git clone https://github.com/yourusername/django-leaflet-geoapp.git
+git clone git@github.com:05TELO/leaf33.git
 cd django-leaflet-geoapp
 ```
 
