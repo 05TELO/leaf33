@@ -3,6 +3,6 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path("", views.dynamic_form_view, name="dynamic_form"),
-    path("data/", views.form_data_list, name="form_data_list"),
+    path("", views.create_area_collection, name="create_area_collection"),
+    path("areas/", views.list_area_collections, name="list_area_collections"),
 ]

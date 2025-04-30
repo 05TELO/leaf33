@@ -1,18 +1,21 @@
-from django.db import transaction
-
-from .models import FormData
+from .models import AreaCollection
 
 
-def save_area_data(data: dict[str, str]) -> None:
-    coordinates = {
-        "ne_lat": data.pop("ne_lat", None),
-        "ne_lng": data.pop("ne_lng", None),
-        "sw_lat": data.pop("sw_lat", None),
-        "sw_lng": data.pop("sw_lng", None),
-    }
-
-    with transaction.atomic():
-        for key, value in data.items():
-            if key.startswith("name"):
-                area_data = {"area_name": value, "coordinates": coordinates}
-                FormData.objects.create(dynamic_fields=area_data)
+def save_area_data(data: dict) -> None:
+    areas = []
+    i = 1
+    while f"name{i}" in data:
+        area = {
+            "name": data[f"name{i}"],
+            "coordinates": {
+                "ne_lat": data.get(f"ne_lat{i}"),
+                "ne_lng": data.get(f"ne_lng{i}"),
+                "sw_lat": data.get(f"sw_lat{i}"),
+                "sw_lng": data.get(f"sw_lng{i}"),
+            },
+        }
+        if any(area["coordinates"].values()):
+            areas.append(area)
+        i += 1
+    if areas:
+        AreaCollection.objects.create(data=areas)

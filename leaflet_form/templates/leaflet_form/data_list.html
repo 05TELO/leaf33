@@ -3,26 +3,21 @@
 {% block content %}
 <div class="container">
     <h2>Saved Areas</h2>
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Date</th>
-                <th>Area Name</th>
-                <th>Coordinates</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for data in form_data %}
-            <tr>
-                <td>{{ data.created_at }}</td>
-                <td>{{ data.dynamic_fields.area_name }}</td>
-                <td>
-                    NE: {{ data.dynamic_fields.coordinates.ne_lat }}, {{ data.dynamic_fields.coordinates.ne_lng }}<br>
-                    SW: {{ data.dynamic_fields.coordinates.sw_lat }}, {{ data.dynamic_fields.coordinates.sw_lng }}
-                </td>
-            </tr>
+    {% for collection in area_collections %}
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5>Saved at: {{ collection.created_at }}</h5>
+        </div>
+        <div class="card-body">
+            {% for area in collection.data %}
+            <div class="mb-3 p-3 border rounded">
+                <h6>{{ area.name }}</h6>
+                <div>North-East: {{ area.coordinates.ne_lat }}, {{ area.coordinates.ne_lng }}</div>
+                <div>South-West: {{ area.coordinates.sw_lat }}, {{ area.coordinates.sw_lng }}</div>
+            </div>
             {% endfor %}
-        </tbody>
-    </table>
+        </div>
+    </div>
+    {% endfor %}
 </div>
 {% endblock %}

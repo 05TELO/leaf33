@@ -10,22 +10,22 @@
             <form id="dynamic-form" method="post">
                 {% csrf_token %}
                 <div id="inputs-container">
-                    <div class="area-group">
+                    <div class="area-group mt-3" data-index="1">
                         <div class="form-group">
-                            <label>Area Name</label>
-                            <input type="text" name="name1" class="form-control area-name" placeholder="Enter area name">
+                            <label>Area Name 1</label>
+                            <input type="text" name="name1" class="form-control area-name" placeholder="Enter area name" required>
                         </div>
                         <button type="button" class="btn btn-primary select-area">Select Area</button>
                         <div class="coordinates-display mt-2"></div>
-                        <input type="hidden" name="ne_lat" class="ne_lat">
-                        <input type="hidden" name="ne_lng" class="ne_lng">
-                        <input type="hidden" name="sw_lat" class="sw_lat">
-                        <input type="hidden" name="sw_lng" class="sw_lng">
+                        <input type="hidden" name="ne_lat1" class="ne_lat">
+                        <input type="hidden" name="ne_lng1" class="ne_lng">
+                        <input type="hidden" name="sw_lat1" class="sw_lat">
+                        <input type="hidden" name="sw_lng1" class="sw_lng">
                     </div>
                 </div>
                 
-                <button type="button" id="add-input" class="btn btn-secondary">Add Another Area</button>
-                <button type="submit" class="btn btn-success">Save All Areas</button>
+                <button type="button" id="add-input" class="btn btn-secondary mt-3">Add Another Area</button>
+                <button type="submit" class="btn btn-success mt-3">Save All Areas</button>
             </form>
         </div>
         
@@ -52,14 +52,14 @@ $(document).ready(function() {
     }).addTo(map);
     
     $(document).on('click', '.select-area', function() {
-        currentAreaGroup = $(this).closest('.area-group');
-        currentAreaGroup.find('.coordinates-display').html('<div class="alert alert-info">Click on map to select first point</div>');
-        
         if (rectangle) {
             map.removeLayer(rectangle);
             rectangle = null;
         }
         startPoint = null;
+        
+        currentAreaGroup = $(this).closest('.area-group');
+        currentAreaGroup.find('.coordinates-display').html('<div class="alert alert-info">Click on map to select first point</div>');
     });
     
     map.on('click', function(e) {
@@ -75,10 +75,12 @@ $(document).ready(function() {
             
             rectangle = L.rectangle(L.latLngBounds(startPoint, e.latlng), {
                 color: "#ff7800",
-                weight: 1
+                weight: 1,
+                fillOpacity: 0.2
             }).addTo(map);
             
             const bounds = rectangle.getBounds();
+            const areaIndex = currentAreaGroup.data('index');
             
             currentAreaGroup.find('.ne_lat').val(bounds.getNorthEast().lat.toFixed(6));
             currentAreaGroup.find('.ne_lng').val(bounds.getNorthEast().lng.toFixed(6));
@@ -100,20 +102,50 @@ $(document).ready(function() {
     
     $('#add-input').click(function() {
         inputCount++;
-        $('#inputs-container').append(`
-            <div class="area-group mt-3">
+        const newGroup = $(`
+            <div class="area-group mt-3" data-index="${inputCount}">
                 <div class="form-group">
-                    <label>Area Name</label>
-                    <input type="text" name="name${inputCount}" class="form-control area-name" placeholder="Enter area name">
+                    <label>Area Name ${inputCount}</label>
+                    <input type="text" name="name${inputCount}" class="form-control area-name" placeholder="Enter area name" required>
                 </div>
                 <button type="button" class="btn btn-primary select-area">Select Area</button>
                 <div class="coordinates-display mt-2"></div>
-                <input type="hidden" name="ne_lat" class="ne_lat">
-                <input type="hidden" name="ne_lng" class="ne_lng">
-                <input type="hidden" name="sw_lat" class="sw_lat">
-                <input type="hidden" name="sw_lng" class="sw_lng">
+                <input type="hidden" name="ne_lat${inputCount}" class="ne_lat">
+                <input type="hidden" name="ne_lng${inputCount}" class="ne_lng">
+                <input type="hidden" name="sw_lat${inputCount}" class="sw_lat">
+                <input type="hidden" name="sw_lng${inputCount}" class="sw_lng">
             </div>
         `);
+        $('#inputs-container').append(newGroup);
+    });
+    
+    $('#dynamic-form').submit(function(e) {
+        let allAreasValid = true;
+        
+        $('.area-group').each(function() {
+            const group = $(this);
+            const areaName = group.find('.area-name').val();
+            const hasCoords = group.find('.ne_lat').val() !== '';
+            
+            if (!hasCoords) {
+                group.find('.coordinates-display').html(
+                    '<div class="alert alert-danger">Please select area on the map</div>'
+                );
+                allAreasValid = false;
+            }
+            
+            if (!areaName) {
+                group.find('.coordinates-display').html(
+                    '<div class="alert alert-danger">Please enter area name</div>'
+                );
+                allAreasValid = false;
+            }
+        });
+        
+        if (!allAreasValid) {
+            e.preventDefault();
+            alert('Please fill all area names and select areas on the map');
+        }
     });
 });
 </script>
@@ -124,6 +156,16 @@ $(document).ready(function() {
     border: 1px solid #ddd;
     border-radius: 5px;
     margin-bottom: 15px;
+    background-color: #f9f9f9;
+}
+
+.coordinates-display {
+    min-height: 50px;
+}
+
+#map {
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
 </style>
 {% endblock %}
