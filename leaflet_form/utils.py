@@ -3,7 +3,7 @@ from django.db import transaction
 from .models import FormData
 
 
-def save_area_data(data: dict) -> None:
+def save_area_data(data: dict[str, str]) -> None:
     coordinates = {
         "ne_lat": data.pop("ne_lat", None),
         "ne_lng": data.pop("ne_lng", None),

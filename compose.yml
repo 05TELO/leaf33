@@ -13,6 +13,8 @@ services:
     build:
       context: .
       dockerfile: ./Dockerfile
+    volumes:
+      - .:/app
     ports:
       - "8000:8000"
     depends_on:
@@ -22,7 +24,9 @@ services:
       sh -c "
       python manage.py collectstatic --noinput &&
       python manage.py migrate &&
-      gunicorn --bind 0.0.0.0:8000 --workers 1 core.wsgi:application --reload"
+      gunicorn --bind 0.0.0.0:8000 --workers 1 core.wsgi:application
+      --access-logfile - --reload
+      --logger-class core.gunicorn_config.CustomGunicornLogger"
 
   db:
     <<: *default

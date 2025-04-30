@@ -13,6 +13,7 @@ dependencies = [
     "whitenoise>=6.9.0",
     "leaflet>=0.0.3",
     "django-leaflet>=0.31.0",
+    "colorlog>=6.9.0",
 ]
 
 
