@@ -14,6 +14,8 @@ dependencies = [
     "leaflet>=0.0.3",
     "django-leaflet>=0.31.0",
     "colorlog>=6.9.0",
+    "pytest-django>=4.11.1",
+    "pytest-mock>=3.14.0",
 ]
 
 
@@ -98,6 +100,7 @@ ignore = [
     "D213", # Multi-line docstring summary should start at the second line
     "RUF001", # String contains cyrillic
 
+
 ]
 
 # Allow fix for all enabled rules (when `--fix`) is provided.
@@ -125,3 +128,15 @@ line-ending = "auto"
 "**/{tests,docs,tools}/*" = ["E402"]
 "migrations/**.py" = ["E501"]   # line length
 "tests.py" = ["S101"]  # use of `assert`
+"**/test_*.py" = ["S101", "PLR2004"]
+"**/*_test.py" = ["S101", "PLR2004"]
+"**/conftest.py" = ["S101", "PLR2004"]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "core.settings"
+cache_dir = ".artifacts/pytest/"
+python_files = [
+    "tests.py",
+    "test_*.py",
+    "*_tests.py"
+]
