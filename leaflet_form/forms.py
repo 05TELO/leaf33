@@ -1,9 +1,9 @@
 from django import forms
 
 
-class DynamicForm(forms.Form):
+class AreaCollectionForm(forms.Form):
     name = forms.CharField(
-        required=False,
+        required=True,
         widget=forms.TextInput(
             attrs={"class": "form-control", "placeholder": "Enter name"}
         ),

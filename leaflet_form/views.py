@@ -3,7 +3,7 @@ from django.shortcuts import redirect, render
 
 from leaflet_form.utils import save_area_data
 
-from .forms import DynamicForm
+from .forms import AreaCollectionForm
 from .models import AreaCollection
 
 
@@ -13,7 +13,7 @@ def create_area_collection(request: HttpRequest) -> HttpResponse:
         save_area_data(form_data)
         return redirect("list_area_collections")
 
-    return render(request, "leaflet_form/form.html", {"form": DynamicForm()})
+    return render(request, "leaflet_form/form.html", {"form": AreaCollectionForm()})
 
 
 def list_area_collections(request: HttpRequest) -> HttpResponse:
